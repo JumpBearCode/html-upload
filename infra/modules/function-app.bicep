@@ -13,6 +13,10 @@ param team1ReaderGroupId string
 param team2ReaderGroupId string
 param team3ReaderGroupId string
 
+@description('Client secret for the EasyAuth app registration. EasyAuth needs it to redeem the auth code in the hybrid (code id_token) flow. Supplied out-of-band as a secure parameter (e.g. via azd env MICROSOFT_PROVIDER_AUTHENTICATION_SECRET) - never hardcode it.')
+@secure()
+param authClientSecret string
+
 // Reference existing storage account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
@@ -28,6 +32,11 @@ resource appRegistration 'Microsoft.Graph/applications@v1.0' = {
   displayName: '${functionAppName}-auth'
   uniqueName: '${functionAppName}-auth'
   signInAudience: 'AzureADMyOrg'
+  // Stamp the caller's security-group object IDs into the id_token as "groups"
+  // claims so the Function App can authorize from claims (Level 1) without a
+  // Graph call. On group overage AAD emits a _claim_names pointer instead and
+  // the app falls back to Graph (Level 2).
+  groupMembershipClaims: 'SecurityGroup'
   web: {
     redirectUris: [
       'https://${functionAppName}.azurewebsites.net/.auth/login/aad/callback'
@@ -129,6 +138,12 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AZURE_TENANT_ID'
           value: tenantId
         }
+        // Secret EasyAuth uses to redeem the auth code (referenced by
+        // clientSecretSettingName in authsettingsV2 below).
+        {
+          name: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET'
+          value: authClientSecret
+        }
         // Group mapping: container name -> reader group ID
         {
           name: 'READER_GROUP_TEAM1'
@@ -174,8 +189,9 @@ resource authSettings 'Microsoft.Web/sites/config@2023-12-01' = {
       azureActiveDirectory: {
         enabled: true
         registration: {
-          openIdIssuer: 'https://sts.windows.net/${tenantId}/v2.0'
+          openIdIssuer: 'https://login.microsoftonline.com/${tenantId}/v2.0'
           clientId: appRegistration.appId
+          clientSecretSettingName: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET'
         }
         validation: {
           defaultAuthorizationPolicy: {
@@ -183,8 +199,11 @@ resource authSettings 'Microsoft.Web/sites/config@2023-12-01' = {
           }
         }
         login: {
+          // offline_access -> AAD issues a refresh token so EasyAuth can renew
+          // the Graph access token past its ~60-90 min lifetime (the Level 2
+          // fallback depends on it; without it the app 401s after expiry).
           loginParameters: [
-            'scope=openid profile email https://graph.microsoft.com/GroupMember.Read.All'
+            'scope=openid profile email offline_access https://graph.microsoft.com/GroupMember.Read.All'
             'response_type=code id_token'
           ]
         }

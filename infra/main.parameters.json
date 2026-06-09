@@ -10,6 +10,9 @@
     },
     "functionAppName": {
       "value": "${AZURE_FUNCTION_APP_NAME}"
+    },
+    "authClientSecret": {
+      "value": "${MICROSOFT_PROVIDER_AUTHENTICATION_SECRET}"
     }
   }
 }

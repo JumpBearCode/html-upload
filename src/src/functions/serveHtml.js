@@ -12,63 +12,96 @@ const CONTAINER_GROUP_MAP = {
 const VALID_CONTAINERS = Object.keys(CONTAINER_GROUP_MAP);
 
 /**
- * Get the user's group memberships by calling Microsoft Graph API
- * using the access token from EasyAuth.
+ * Decode the EasyAuth-injected X-MS-CLIENT-PRINCIPAL header.
+ * It is a base64-encoded JSON object: { auth_typ, claims: [{ typ, val }], ... }.
+ * Returns the parsed claims array (or [] if the header is absent/unparseable).
  */
-async function getUserGroupIds(accessToken) {
-  const response = await fetch(
-    "https://graph.microsoft.com/v1.0/me/memberOf?$select=id",
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+function getPrincipalClaims(request) {
+  const header = request.headers.get("x-ms-client-principal");
+  if (!header) return [];
+  try {
+    const json = Buffer.from(header, "base64").toString("utf-8");
+    const principal = JSON.parse(json);
+    return Array.isArray(principal.claims) ? principal.claims : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * LEVEL 1 — read group membership straight from the token claims.
+ *
+ * Requires the app registration to be configured with
+ * groupMembershipClaims = 'SecurityGroup', which makes Azure AD stamp the
+ * caller's security-group object IDs into the id_token as repeated "groups"
+ * claims. EasyAuth surfaces them via X-MS-CLIENT-PRINCIPAL, so no network
+ * call is needed for the common case.
+ *
+ * Returns:
+ *   { groups: string[], overage: boolean }
+ *   - groups:  the group IDs found in the token (empty if none / overaged)
+ *   - overage: true when AAD omitted the group list because the user is in
+ *              too many groups and instead emitted a _claim_names/_claim_sources
+ *              (or hasgroups) pointer -> we must fall back to Graph.
+ */
+function getGroupsFromClaims(claims) {
+  const groups = claims
+    .filter((c) => c.typ === "groups")
+    .map((c) => c.val);
+
+  // Overage markers AAD adds when the group list is too large to inline.
+  const overage = claims.some(
+    (c) =>
+      c.typ === "_claim_names" ||
+      c.typ === "hasgroups" ||
+      c.typ === "http://schemas.microsoft.com/claims/groups.link"
   );
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(
-      `Graph API call failed: ${response.status} - ${text}`
-    );
-  }
-
-  const data = await response.json();
-  return data.value.map((group) => group.id);
+  return { groups, overage };
 }
 
 /**
- * Get the access token for Graph API from EasyAuth.
- * EasyAuth stores tokens and exposes them via /.auth/me
+ * LEVEL 2 — overage fallback. Call Microsoft Graph /me/memberOf using the
+ * access token EasyAuth keeps in its token store. This only runs when the
+ * token did not inline the groups (overage) or carried no groups claim at all.
+ *
+ * The access token here is refreshable because the login requests the
+ * `offline_access` scope, so this path keeps working past the ~60-90 min
+ * access-token lifetime instead of failing with a 401.
  */
-async function getGraphAccessToken(request) {
-  // EasyAuth provides the access token in the X-MS-TOKEN-AAD-ACCESS-TOKEN header
+async function getUserGroupIdsFromGraph(request, context) {
   const accessToken = request.headers.get("x-ms-token-aad-access-token");
-  if (accessToken) {
-    return accessToken;
+  if (!accessToken) {
+    throw new Error("No AAD access token available from EasyAuth token store");
   }
 
-  // Fallback: try to get it from /.auth/me endpoint
-  const authMeUrl = `${new URL(request.url).origin}/.auth/me`;
-  const cookie = request.headers.get("cookie");
-  const resp = await fetch(authMeUrl, {
-    headers: { Cookie: cookie || "" },
-  });
+  const ids = [];
+  let url =
+    "https://graph.microsoft.com/v1.0/me/memberOf?$select=id&$top=999";
 
-  if (!resp.ok) {
-    throw new Error("Failed to retrieve auth info from /.auth/me");
+  // Follow @odata.nextLink so we resolve membership even for large directories.
+  while (url) {
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Graph API call failed: ${response.status} - ${text}`);
+    }
+    const data = await response.json();
+    for (const obj of data.value || []) {
+      if (obj.id) ids.push(obj.id);
+    }
+    url = data["@odata.nextLink"] || null;
   }
 
-  const authInfo = await resp.json();
-  if (authInfo && authInfo.length > 0) {
-    const aadToken = authInfo[0].access_token;
-    if (aadToken) return aadToken;
-  }
-
-  throw new Error("No access token available from EasyAuth");
+  context.log(`Graph fallback resolved ${ids.length} group(s)`);
+  return ids;
 }
 
 /**
- * Download blob content from Azure Storage using managed identity.
+ * Download blob content from Azure Storage using the Function App's
+ * managed identity (granted Storage Blob Data Reader).
  */
 async function getBlobContent(containerName, blobName) {
   const accountName = process.env.STORAGE_ACCOUNT_NAME;
@@ -94,6 +127,12 @@ async function getBlobContent(containerName, blobName) {
   return Buffer.concat(chunks).toString("utf-8");
 }
 
+const htmlError = (status, message) => ({
+  status,
+  headers: { "Content-Type": "text/html" },
+  body: `<html><body><h1>${status}</h1><p>${message}</p></body></html>`,
+});
+
 // Main HTTP trigger: serves HTML from blob storage
 // Route pattern: /{containerName}/{*blobPath}
 app.http("serveHtml", {
@@ -104,100 +143,72 @@ app.http("serveHtml", {
     const containerName = request.params.containerName;
     const blobPath = request.params.blobPath;
 
-    context.log(
-      `Request for container=${containerName}, blob=${blobPath}`
-    );
+    context.log(`Request for container=${containerName}, blob=${blobPath}`);
 
-    // Validate container name
     if (!VALID_CONTAINERS.includes(containerName)) {
-      return {
-        status: 404,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>404 - Not Found</h1><p>Invalid container.</p></body></html>",
-      };
+      return htmlError(404, "Invalid container.");
     }
-
     if (!blobPath) {
-      return {
-        status: 400,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>400 - Bad Request</h1><p>Please specify an HTML file path.</p></body></html>",
-      };
+      return htmlError(400, "Please specify an HTML file path.");
     }
 
-    // Get the required reader group ID for this container
-    const requiredGroupEnvVar = CONTAINER_GROUP_MAP[containerName];
-    const requiredGroupId = process.env[requiredGroupEnvVar];
-
+    const requiredGroupId = process.env[CONTAINER_GROUP_MAP[containerName]];
     if (!requiredGroupId) {
       context.log(`Reader group not configured for container: ${containerName}`);
-      return {
-        status: 500,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>500 - Configuration Error</h1><p>Reader group not configured for this container.</p></body></html>",
-      };
+      return htmlError(500, "Reader group not configured for this container.");
     }
 
-    // Get the user's access token from EasyAuth
-    let accessToken;
-    try {
-      accessToken = await getGraphAccessToken(request);
-    } catch (err) {
-      context.log(`Failed to get access token: ${err.message}`);
-      return {
-        status: 401,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>401 - Unauthorized</h1><p>Authentication required. Please log in.</p></body></html>",
-      };
+    // ---- Authorization: Level 1 (claims) -> Level 2 (Graph on overage) ----
+    let authorized = false;
+    const { groups, overage } = getGroupsFromClaims(getPrincipalClaims(request));
+
+    if (groups.length > 0 && !overage) {
+      // Level 1: token carried the full group list -> authoritative answer.
+      authorized = groups.includes(requiredGroupId);
+      context.log(
+        `Level 1 (claims): ${groups.length} group(s), authorized=${authorized}`
+      );
+    } else {
+      // Level 2: groups were overaged or absent -> ask Graph.
+      context.log(
+        `Level 2 (graph fallback): overage=${overage}, inlineGroups=${groups.length}`
+      );
+      let userGroupIds;
+      try {
+        userGroupIds = await getUserGroupIdsFromGraph(request, context);
+      } catch (err) {
+        context.log(`Graph fallback failed: ${err.message}`);
+        return htmlError(
+          401,
+          "Authentication required. Please log in again."
+        );
+      }
+      authorized = userGroupIds.includes(requiredGroupId);
     }
 
-    // Check user's group membership via Graph API
-    let userGroupIds;
-    try {
-      userGroupIds = await getUserGroupIds(accessToken);
-    } catch (err) {
-      context.log(`Failed to get user groups: ${err.message}`);
-      return {
-        status: 403,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>403 - Forbidden</h1><p>Unable to verify group membership.</p></body></html>",
-      };
-    }
-
-    // Check if user belongs to the required reader group
-    if (!userGroupIds.includes(requiredGroupId)) {
+    if (!authorized) {
       context.log(
         `User not in required group ${requiredGroupId} for container ${containerName}`
       );
-      return {
-        status: 403,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>403 - Forbidden</h1><p>You do not have permission to view files in this container.</p></body></html>",
-      };
+      return htmlError(
+        403,
+        "You do not have permission to view files in this container."
+      );
     }
 
-    // Fetch the blob content using managed identity
+    // ---- Fetch and return the blob ----
     let htmlContent;
     try {
       htmlContent = await getBlobContent(containerName, blobPath);
     } catch (err) {
       context.log(`Failed to fetch blob: ${err.message}`);
-      return {
-        status: 500,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>500 - Server Error</h1><p>Failed to retrieve the file.</p></body></html>",
-      };
+      return htmlError(500, "Failed to retrieve the file.");
     }
 
     if (htmlContent === null) {
-      return {
-        status: 404,
-        headers: { "Content-Type": "text/html" },
-        body: "<html><body><h1>404 - Not Found</h1><p>The requested HTML file was not found.</p></body></html>",
-      };
+      return htmlError(404, "The requested HTML file was not found.");
     }
 
-    // Return the HTML content directly
     return {
       status: 200,
       headers: {
@@ -214,11 +225,10 @@ app.http("root", {
   methods: ["GET"],
   authLevel: "anonymous",
   route: "/",
-  handler: async (request, context) => {
-    return {
-      status: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8" },
-      body: `<!DOCTYPE html>
+  handler: async () => ({
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+    body: `<!DOCTYPE html>
 <html>
 <head><title>HTML Viewer</title></head>
 <body>
@@ -234,6 +244,5 @@ app.http("root", {
   <p>You must be a member of the corresponding Reader AD group to view files.</p>
 </body>
 </html>`,
-    };
-  },
+  }),
 });
