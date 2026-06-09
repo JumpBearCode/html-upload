@@ -1,4 +1,4 @@
-extension microsoftGraph
+extension microsoftGraphV1
 
 @description('Environment name used as prefix for AD group names')
 param environmentName string

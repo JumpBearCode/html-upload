@@ -1,3 +1,5 @@
+extension microsoftGraphV1
+
 param location string
 param functionAppName string
 param appServicePlanName string
