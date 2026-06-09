@@ -12,10 +12,6 @@ param location string
 @description('Azure AD Tenant ID for EasyAuth configuration')
 param tenantId string = tenant().tenantId
 
-@description('Client secret for the EasyAuth app registration (hybrid code flow). Supply via azd env MICROSOFT_PROVIDER_AUTHENTICATION_SECRET - do not hardcode.')
-@secure()
-param authClientSecret string
-
 // Optional: allow overriding resource names
 param storageAccountName string = ''
 param functionAppName string = ''
@@ -91,7 +87,6 @@ module functionApp './modules/function-app.bicep' = {
     team1ReaderGroupId: adGroups.outputs.team1ReaderGroupId
     team2ReaderGroupId: adGroups.outputs.team2ReaderGroupId
     team3ReaderGroupId: adGroups.outputs.team3ReaderGroupId
-    authClientSecret: authClientSecret
   }
 }
 

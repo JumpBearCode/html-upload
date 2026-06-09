@@ -13,10 +13,6 @@ param team1ReaderGroupId string
 param team2ReaderGroupId string
 param team3ReaderGroupId string
 
-@description('Client secret for the EasyAuth app registration. EasyAuth needs it to redeem the auth code in the hybrid (code id_token) flow. Supplied out-of-band as a secure parameter (e.g. via azd env MICROSOFT_PROVIDER_AUTHENTICATION_SECRET) - never hardcode it.')
-@secure()
-param authClientSecret string
-
 // Reference existing storage account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
@@ -25,6 +21,16 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing 
 // Reference existing Application Insights
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsName
+}
+
+// Dedicated user-assigned identity used ONLY by EasyAuth as a federated
+// credential (replaces the client secret). Per Microsoft guidance it must not
+// be assigned to any other resource, or that resource could impersonate the
+// app registration.
+resource easyAuthIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: 'id-easyauth-${functionAppName}'
+  location: location
+  tags: tags
 }
 
 // App Registration for EasyAuth
@@ -65,6 +71,17 @@ resource appRegistration 'Microsoft.Graph/applications@v1.0' = {
   ]
 }
 
+// Federated identity credential: trust the user-assigned identity so EasyAuth
+// mints a client assertion with it instead of using a client secret.
+// The Graph extension requires the full '{app-uniqueName}/{credential}' name.
+resource easyAuthFic 'Microsoft.Graph/applications/federatedIdentityCredentials@v1.0' = {
+  name: '${appRegistration.uniqueName}/easyauth-fic'
+  audiences: ['api://AzureADTokenExchange']
+  issuer: 'https://login.microsoftonline.com/${tenantId}/v2.0'
+  subject: easyAuthIdentity.properties.principalId
+  description: 'EasyAuth uses the user-assigned identity to authenticate instead of a secret'
+}
+
 // Service Principal for the App Registration
 resource servicePrincipal 'Microsoft.Graph/servicePrincipals@v1.0' = {
   appId: appRegistration.appId
@@ -94,7 +111,12 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
   })
   kind: 'functionapp,linux'
   identity: {
-    type: 'SystemAssigned'
+    // System-assigned: used by the function code for blob access (Storage Blob
+    // Data Reader). User-assigned (easyAuthIdentity): used by EasyAuth for the FIC.
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${easyAuthIdentity.id}': {}
+    }
   }
   properties: {
     serverFarmId: appServicePlan.id
@@ -138,11 +160,12 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AZURE_TENANT_ID'
           value: tenantId
         }
-        // Secret EasyAuth uses to redeem the auth code (referenced by
-        // clientSecretSettingName in authsettingsV2 below).
+        // Tells EasyAuth to authenticate with the user-assigned identity's
+        // federated credential (the UAMI's client ID) instead of a secret.
+        // Referenced by clientSecretSettingName in authsettingsV2 below.
         {
-          name: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET'
-          value: authClientSecret
+          name: 'OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID'
+          value: easyAuthIdentity.properties.clientId
         }
         // Group mapping: container name -> reader group ID
         {
@@ -191,7 +214,7 @@ resource authSettings 'Microsoft.Web/sites/config@2023-12-01' = {
         registration: {
           openIdIssuer: 'https://login.microsoftonline.com/${tenantId}/v2.0'
           clientId: appRegistration.appId
-          clientSecretSettingName: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET'
+          clientSecretSettingName: 'OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID'
         }
         validation: {
           defaultAuthorizationPolicy: {
