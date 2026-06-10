@@ -47,11 +47,14 @@ resource containers 'Microsoft.Storage/storageAccounts/blobServices/containers@2
   }
 ]
 
+// Role assignments are scoped to each team's CONTAINER (not the storage
+// account) for least privilege: a team can only touch its own container.
+// containers[0]=team1, containers[1]=team2, containers[2]=team3.
+
 // --- Contributor role assignments (upload access) ---
-// Team 1 Contributor -> team1 container (account-level scoped)
 resource team1ContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, team1ContributorGroupId, storageBlobDataContributorRoleId, 'team1')
-  scope: storageAccount
+  name: guid(containers[0].id, team1ContributorGroupId, storageBlobDataContributorRoleId)
+  scope: containers[0]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
     principalId: team1ContributorGroupId
@@ -61,8 +64,8 @@ resource team1ContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-0
 }
 
 resource team2ContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, team2ContributorGroupId, storageBlobDataContributorRoleId, 'team2')
-  scope: storageAccount
+  name: guid(containers[1].id, team2ContributorGroupId, storageBlobDataContributorRoleId)
+  scope: containers[1]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
     principalId: team2ContributorGroupId
@@ -72,8 +75,8 @@ resource team2ContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-0
 }
 
 resource team3ContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, team3ContributorGroupId, storageBlobDataContributorRoleId, 'team3')
-  scope: storageAccount
+  name: guid(containers[2].id, team3ContributorGroupId, storageBlobDataContributorRoleId)
+  scope: containers[2]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataContributorRoleId)
     principalId: team3ContributorGroupId
@@ -84,8 +87,8 @@ resource team3ContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-0
 
 // --- Reader role assignments (for Portal browsing, not for Function App serving) ---
 resource team1ReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, team1ReaderGroupId, storageBlobDataReaderRoleId, 'team1-reader')
-  scope: storageAccount
+  name: guid(containers[0].id, team1ReaderGroupId, storageBlobDataReaderRoleId)
+  scope: containers[0]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataReaderRoleId)
     principalId: team1ReaderGroupId
@@ -95,8 +98,8 @@ resource team1ReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 }
 
 resource team2ReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, team2ReaderGroupId, storageBlobDataReaderRoleId, 'team2-reader')
-  scope: storageAccount
+  name: guid(containers[1].id, team2ReaderGroupId, storageBlobDataReaderRoleId)
+  scope: containers[1]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataReaderRoleId)
     principalId: team2ReaderGroupId
@@ -106,8 +109,8 @@ resource team2ReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 }
 
 resource team3ReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, team3ReaderGroupId, storageBlobDataReaderRoleId, 'team3-reader')
-  scope: storageAccount
+  name: guid(containers[2].id, team3ReaderGroupId, storageBlobDataReaderRoleId)
+  scope: containers[2]
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataReaderRoleId)
     principalId: team3ReaderGroupId
