@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Dashboard Library 100 Containers Mockup V2</title>
+  <desc id="desc">Softer UI mockup for a dashboard library with 100 accessible containers, read and write access tags, global search autocomplete, and no folder-level favorites.</desc>
+  <defs>
+    <style>
+      .page { fill: #f6f8fb; }
+      .sidebar { fill: #ffffff; stroke: #e3e8f0; stroke-width: 1; }
+      .main { fill: #f9fbfd; }
+      .surface { fill: #ffffff; stroke: #e4e9f1; stroke-width: 1; }
+      .line { stroke: #e5eaf1; stroke-width: 1; }
+      .nav-active { fill: #eaf3ff; }
+      text { font-family: Arial, Helvetica, sans-serif; }
+      .h1 { font-family: Arial, Helvetica, sans-serif; font-size: 22px; font-weight: 700; fill: #182230; }
+      .h2 { font-family: Arial, Helvetica, sans-serif; font-size: 16px; font-weight: 700; fill: #182230; }
+      .body { font-family: Arial, Helvetica, sans-serif; font-size: 13px; font-weight: 400; fill: #334155; }
+      .muted { font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 400; fill: #667085; }
+      .small { font-family: Arial, Helvetica, sans-serif; font-size: 11px; font-weight: 600; fill: #667085; }
+      .label { font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 600; fill: #475467; }
+      .chip { fill: #ffffff; stroke: #d8e0ea; stroke-width: 1; }
+      .chip-active { fill: #edf6ff; stroke: #8bbcf6; stroke-width: 1; }
+      .tag-read { fill: #edf6ff; stroke: #93c5fd; stroke-width: 1; }
+      .tag-write { fill: #ecfdf3; stroke: #86d39e; stroke-width: 1; }
+      .tag-text { font-family: Arial, Helvetica, sans-serif; font-size: 10px; font-weight: 700; fill: #344054; }
+      .row { fill: #ffffff; stroke: #e4e9f1; stroke-width: 1; }
+      .row-soft { fill: #fbfdff; stroke: #e4e9f1; stroke-width: 1; }
+      .search { fill: #ffffff; stroke: #9ab7d9; stroke-width: 1.3; }
+      .dropdown { fill: #ffffff; stroke: #dbe3ee; stroke-width: 1; filter: url(#softShadow); }
+      .folder { fill: #4d8ee8; }
+      .folder-tab { fill: #69a3f0; }
+      .blue { fill: #1f6fd1; }
+      .softShadow { filter: url(#softShadow); }
+    </style>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#1b2a41" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <rect class="page" width="1280" height="720"/>
+
+  <rect class="sidebar" x="0" y="0" width="268" height="720"/>
+  <g transform="translate(22 24)">
+    <path d="M20 0 L40 12 L40 36 L20 48 L0 36 L0 12 Z" fill="#1769d2"/>
+    <path d="M20 10 L31 16.5 L31 31.5 L20 38 L9 31.5 L9 16.5 Z" fill="#ffffff" opacity="0.94"/>
+    <text class="h2" x="54" y="30">Contoso Analytics</text>
+  </g>
+
+  <rect class="nav-active" x="16" y="102" width="234" height="42" rx="8"/>
+  <g transform="translate(28 113)">
+    <path class="folder" d="M0 5.5C0 3.6 1.6 2 3.5 2h6.2l2.4 3h10.4C24.4 5 26 6.6 26 8.5v13C26 23.4 24.4 25 22.5 25h-19C1.6 25 0 23.4 0 21.5z"/>
+    <text class="body" x="38" y="18" fill="#155db7">Containers</text>
+  </g>
+  <g transform="translate(28 162)">
+    <path d="M13 1.5l3.4 7 7.7 1.1-5.6 5.4 1.3 7.6L13 19l-6.8 3.6 1.3-7.6L1.9 9.6l7.7-1.1z" fill="none" stroke="#98a2b3" stroke-width="1.4"/>
+    <text class="body" x="38" y="17">Favorites</text>
+  </g>
+
+  <rect x="50" y="550" width="198" height="48" rx="8" fill="#ffffff" stroke="#dbe3ee"/>
+  <g transform="translate(70 565)">
+    <path d="M8 0v8H0v8h8v8l13-12z" fill="none" stroke="#596579" stroke-width="1.5" transform="translate(0 5)"/>
+    <text class="body" x="34" y="20">Sign Out</text>
+  </g>
+  <line class="line" x1="0" y1="612" x2="268" y2="612"/>
+  <circle cx="40" cy="662" r="20" fill="#2f7ddb"/>
+  <text x="29" y="668" style="font-family:Arial,Helvetica,sans-serif; font-size:14px; font-weight:700; fill:#fff;">JD</text>
+  <text class="body" x="74" y="668">John Doe</text>
+  <path d="M226 665l5-5 5 5" fill="none" stroke="#667085" stroke-width="1.5"/>
+
+  <rect class="main" x="268" y="0" width="1012" height="720"/>
+  <line class="line" x1="268" y1="101" x2="1280" y2="101"/>
+  <text class="h1" x="302" y="57">Dashboard Library</text>
+
+  <rect class="search" x="758" y="28" width="488" height="42" rx="10"/>
+  <g transform="translate(774 41)">
+    <circle cx="8" cy="8" r="6" fill="none" stroke="#667085" stroke-width="1.6"/>
+    <path d="M13 13l6 6" stroke="#667085" stroke-width="1.6"/>
+  </g>
+  <text class="body" x="810" y="55">BUS</text>
+  <line x1="839" y1="39" x2="839" y2="59" stroke="#182230" stroke-width="1.2"/>
+  <text class="body" x="1217" y="55" fill="#667085">×</text>
+
+  <rect class="dropdown" x="758" y="72" width="488" height="150" rx="8"/>
+  <text class="small" x="778" y="98">DASHBOARDS</text>
+  <g transform="translate(778 116)">
+    <rect x="0" y="0" width="22" height="28" rx="5" fill="#f5f9ff" stroke="#78a9e9"/>
+    <path d="M7 9l3-3M15 9l-3-3M8 17l6-8" fill="none" stroke="#1f6fd1" stroke-width="1.2"/>
+    <text class="body" x="38" y="18">Business Report.html</text>
+    <text class="muted" x="306" y="18">Finance Ops</text>
+  </g>
+  <line class="line" x1="778" y1="154" x2="1226" y2="154"/>
+  <g transform="translate(778 164)">
+    <rect x="0" y="0" width="22" height="28" rx="5" fill="#f5f9ff" stroke="#78a9e9"/>
+    <path d="M7 9l3-3M15 9l-3-3M8 17l6-8" fill="none" stroke="#1f6fd1" stroke-width="1.2"/>
+    <text class="body" x="38" y="18">Business Outcome Report.html</text>
+    <text class="muted" x="306" y="18">Executive Team</text>
+  </g>
+
+  <text class="h2" x="302" y="145">Containers</text>
+  <text class="muted" x="302" y="168">100 containers available based on your AD group access</text>
+
+  <g transform="translate(302 186)">
+    <rect class="chip-active" x="0" y="0" width="58" height="30" rx="15"/>
+    <text class="label" x="18" y="20">All</text>
+    <rect class="chip" x="68" y="0" width="82" height="30" rx="15"/>
+    <text class="label" x="88" y="20">Read</text>
+    <rect class="chip" x="160" y="0" width="86" height="30" rx="15"/>
+    <text class="label" x="180" y="20">Write</text>
+  </g>
+
+  <g transform="translate(1168 286)">
+    <rect x="0" y="0" width="38" height="36" rx="7" fill="#edf6ff" stroke="#8bbcf6"/>
+    <path d="M12 10h14M12 18h14M12 26h14" stroke="#1f6fd1" stroke-width="1.7"/>
+    <rect x="40" y="0" width="38" height="36" rx="7" fill="#ffffff" stroke="#d8e0ea"/>
+    <rect x="52" y="10" width="6" height="6" fill="none" stroke="#667085"/>
+    <rect x="62" y="10" width="6" height="6" fill="none" stroke="#667085"/>
+    <rect x="52" y="20" width="6" height="6" fill="none" stroke="#667085"/>
+    <rect x="62" y="20" width="6" height="6" fill="none" stroke="#667085"/>
+  </g>
+
+  <text class="h2" x="302" y="266">Compact container list</text>
+  <text class="muted" x="302" y="290">Showing 1-14 of 100. Search and access filters stay fixed while the list scrolls.</text>
+
+  <rect class="surface softShadow" x="302" y="313" width="944" height="374" rx="10"/>
+  <g transform="translate(326 328)">
+    <text class="label" x="0" y="16">Container</text>
+    <text class="label" x="392" y="16">Access</text>
+    <text class="label" x="560" y="16">Dashboards</text>
+    <text class="label" x="700" y="16">Last updated</text>
+    <line class="line" x1="0" y1="30" x2="896" y2="30"/>
+  </g>
+
+  <g transform="translate(326 360)">
+    <rect class="row" x="0" y="0" width="896" height="42" rx="7"/>
+    <path class="folder" d="M15 11h15l4 5h15c3 0 5 2 5 5v10c0 3-2 5-5 5H15c-3 0-5-2-5-5V16c0-3 2-5 5-5z"/>
+    <text class="body" x="76" y="26">Finance Ops</text>
+    <rect class="tag-read" x="392" y="10" width="48" height="22" rx="11"/><text class="tag-text" x="416" y="24" text-anchor="middle">Read</text>
+    <rect class="tag-write" x="448" y="10" width="54" height="22" rx="11"/><text class="tag-text" x="475" y="24" text-anchor="middle">Write</text>
+    <text class="body" x="560" y="26">42</text>
+    <text class="muted" x="700" y="26">Jul 13, 2026  9:40 AM</text>
+    <text class="body" x="866" y="26">⋮</text>
+
+    <rect class="row-soft" x="0" y="49" width="896" height="42" rx="7"/>
+    <path class="folder" d="M15 60h15l4 5h15c3 0 5 2 5 5v10c0 3-2 5-5 5H15c-3 0-5-2-5-5V65c0-3 2-5 5-5z"/>
+    <text class="body" x="76" y="75">Executive Team</text>
+    <rect class="tag-read" x="392" y="59" width="48" height="22" rx="11"/><text class="tag-text" x="416" y="73" text-anchor="middle">Read</text>
+    <text class="body" x="560" y="75">18</text>
+    <text class="muted" x="700" y="75">Jul 12, 2026  4:18 PM</text>
+    <text class="body" x="866" y="75">⋮</text>
+
+    <rect class="row" x="0" y="98" width="896" height="42" rx="7"/>
+    <path class="folder" d="M15 109h15l4 5h15c3 0 5 2 5 5v10c0 3-2 5-5 5H15c-3 0-5-2-5-5v-15c0-3 2-5 5-5z"/>
+    <text class="body" x="76" y="124">Sales North America</text>
+    <rect class="tag-read" x="392" y="108" width="48" height="22" rx="11"/><text class="tag-text" x="416" y="122" text-anchor="middle">Read</text>
+    <rect class="tag-write" x="448" y="108" width="54" height="22" rx="11"/><text class="tag-text" x="475" y="122" text-anchor="middle">Write</text>
+    <text class="body" x="560" y="124">27</text>
+    <text class="muted" x="700" y="124">Jul 11, 2026  1:05 PM</text>
+    <text class="body" x="866" y="124">⋮</text>
+
+    <rect class="row-soft" x="0" y="147" width="896" height="42" rx="7"/>
+    <path class="folder" d="M15 158h15l4 5h15c3 0 5 2 5 5v10c0 3-2 5-5 5H15c-3 0-5-2-5-5v-15c0-3 2-5 5-5z"/>
+    <text class="body" x="76" y="173">Business Analytics</text>
+    <rect class="tag-read" x="392" y="157" width="48" height="22" rx="11"/><text class="tag-text" x="416" y="171" text-anchor="middle">Read</text>
+    <text class="body" x="560" y="173">35</text>
+    <text class="muted" x="700" y="173">Jul 10, 2026  2:41 PM</text>
+    <text class="body" x="866" y="173">⋮</text>
+
+    <rect class="row" x="0" y="196" width="896" height="42" rx="7"/>
+    <path class="folder" d="M15 207h15l4 5h15c3 0 5 2 5 5v10c0 3-2 5-5 5H15c-3 0-5-2-5-5v-15c0-3 2-5 5-5z"/>
+    <text class="body" x="76" y="222">Marketing Insights</text>
+    <rect class="tag-read" x="392" y="206" width="48" height="22" rx="11"/><text class="tag-text" x="416" y="220" text-anchor="middle">Read</text>
+    <rect class="tag-write" x="448" y="206" width="54" height="22" rx="11"/><text class="tag-text" x="475" y="220" text-anchor="middle">Write</text>
+    <text class="body" x="560" y="222">21</text>
+    <text class="muted" x="700" y="222">Jul 9, 2026  11:22 AM</text>
+    <text class="body" x="866" y="222">⋮</text>
+
+    <rect class="row-soft" x="0" y="245" width="896" height="42" rx="7"/>
+    <path class="folder" d="M15 256h15l4 5h15c3 0 5 2 5 5v10c0 3-2 5-5 5H15c-3 0-5-2-5-5v-15c0-3 2-5 5-5z"/>
+    <text class="body" x="76" y="271">Operations Control</text>
+    <rect class="tag-read" x="392" y="255" width="48" height="22" rx="11"/><text class="tag-text" x="416" y="269" text-anchor="middle">Read</text>
+    <text class="body" x="560" y="271">16</text>
+    <text class="muted" x="700" y="271">Jul 8, 2026  3:35 PM</text>
+    <text class="body" x="866" y="271">⋮</text>
+
+    <rect class="row" x="0" y="294" width="896" height="42" rx="7"/>
+    <path class="folder" d="M15 305h15l4 5h15c3 0 5 2 5 5v10c0 3-2 5-5 5H15c-3 0-5-2-5-5v-15c0-3 2-5 5-5z"/>
+    <text class="body" x="76" y="320">Customer Success</text>
+    <rect class="tag-read" x="392" y="304" width="48" height="22" rx="11"/><text class="tag-text" x="416" y="318" text-anchor="middle">Read</text>
+    <rect class="tag-write" x="448" y="304" width="54" height="22" rx="11"/><text class="tag-text" x="475" y="318" text-anchor="middle">Write</text>
+    <text class="body" x="560" y="320">31</text>
+    <text class="muted" x="700" y="320">Jul 7, 2026  8:12 AM</text>
+    <text class="body" x="866" y="320">⋮</text>
+  </g>
+
+  <rect x="1256" y="333" width="4" height="326" rx="2" fill="#e1e7ef"/>
+  <rect x="1256" y="363" width="4" height="92" rx="2" fill="#aab6c5"/>
+
+</svg>

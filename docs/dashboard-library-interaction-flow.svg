@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1040" viewBox="0 0 1440 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Dashboard Library Interaction Flow</title>
+  <desc id="desc">Interaction diagram for an internal dashboard library with containers, permissions, search, favorites, and compact display behavior.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f6f7f9; }
+      .panel { fill: #ffffff; stroke: #d7dce3; stroke-width: 1.4; }
+      .node { fill: #ffffff; stroke: #cfd6df; stroke-width: 1.3; }
+      .node-accent { fill: #eff6ff; stroke: #80b7f5; stroke-width: 1.5; }
+      .node-warn { fill: #fff8e6; stroke: #e5b84c; stroke-width: 1.5; }
+      .node-ok { fill: #edfdf5; stroke: #64c18f; stroke-width: 1.5; }
+      .node-soft { fill: #f8fafc; stroke: #cfd6df; stroke-width: 1.3; }
+      .title { font: 700 28px Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 400 15px Arial, sans-serif; fill: #647084; }
+      .section { font: 700 16px Arial, sans-serif; fill: #273246; }
+      .label { font: 700 15px Arial, sans-serif; fill: #1f2937; }
+      .text { font: 400 13px Arial, sans-serif; fill: #4b5563; }
+      .small { font: 400 12px Arial, sans-serif; fill: #687386; }
+      .tag-read { fill: #e8f2ff; stroke: #7db4f0; }
+      .tag-write { fill: #eaf9ef; stroke: #71be8a; }
+      .tag-fav { fill: #fff4cf; stroke: #e7b839; }
+      .tag-text { font: 700 11px Arial, sans-serif; fill: #344054; }
+      .arrow { stroke: #8d98a8; stroke-width: 1.7; fill: none; marker-end: url(#arrowhead); }
+      .arrow-blue { stroke: #3978c6; stroke-width: 2; fill: none; marker-end: url(#arrowheadBlue); }
+      .dash { stroke-dasharray: 6 5; }
+      .divider { stroke: #d7dce3; stroke-width: 1; }
+    </style>
+    <marker id="arrowhead" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L8,4.5 L0,9 Z" fill="#8d98a8" />
+    </marker>
+    <marker id="arrowheadBlue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L8,4.5 L0,9 Z" fill="#3978c6" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1440" height="1040" />
+
+  <text class="title" x="56" y="58">Dashboard Library Interaction Flow</text>
+  <text class="subtitle" x="56" y="86">Google Drive style container browsing with AD group based Read / Write access, frontend search, autocomplete, and favorites.</text>
+
+  <rect class="panel" x="48" y="120" width="210" height="820" rx="12" />
+  <text class="section" x="76" y="160">Side Panel</text>
+  <rect class="node-accent" x="72" y="186" width="138" height="46" rx="8" />
+  <text class="label" x="96" y="214">Company Icon</text>
+
+  <rect class="node-accent" x="72" y="270" width="150" height="52" rx="8" />
+  <text class="label" x="96" y="292">Containers</text>
+  <text class="small" x="96" y="311">folder browser</text>
+
+  <rect class="node" x="72" y="344" width="150" height="52" rx="8" />
+  <text class="label" x="96" y="366">Favorites</text>
+  <text class="small" x="96" y="385">pinned dashboards</text>
+
+  <rect class="node" x="72" y="826" width="150" height="72" rx="10" />
+  <circle cx="102" cy="862" r="18" fill="#1f6fd1" />
+  <text x="92" y="867" style="font:700 13px Arial,sans-serif; fill:#fff;">AL</text>
+  <text class="label" x="130" y="856">Alex Li</text>
+  <text class="small" x="130" y="875">Sign Out menu</text>
+
+  <rect class="panel" x="302" y="120" width="1090" height="820" rx="12" />
+
+  <rect class="node-accent" x="342" y="158" width="250" height="84" rx="10" />
+  <text class="label" x="370" y="188">Initial Load</text>
+  <text class="text" x="370" y="212">GET /api/me</text>
+  <text class="text" x="370" y="232">GET /api/containers</text>
+
+  <rect class="node-ok" x="670" y="150" width="320" height="108" rx="10" />
+  <text class="label" x="700" y="180">Build Accessible Container List</text>
+  <text class="text" x="700" y="206">Read tag: user is in reader AD group</text>
+  <text class="text" x="700" y="228">Write tag: user is in writer AD group</text>
+  <text class="text" x="700" y="250">Write can imply readable UX if policy allows</text>
+
+  <rect class="node" x="1080" y="158" width="232" height="84" rx="10" />
+  <text class="label" x="1108" y="188">Default Route</text>
+  <text class="text" x="1108" y="214">#/containers</text>
+  <text class="text" x="1108" y="234">show folder tiles</text>
+
+  <path class="arrow-blue" d="M592 200 C620 200 638 200 670 200" />
+  <path class="arrow-blue" d="M990 204 C1024 204 1048 204 1080 204" />
+
+  <line class="divider" x1="342" y1="292" x2="1352" y2="292" />
+  <text class="section" x="342" y="330">Containers View</text>
+
+  <rect class="node-accent" x="342" y="354" width="260" height="132" rx="10" />
+  <text class="label" x="370" y="384">Container Grid</text>
+  <text class="text" x="370" y="410">Team 1</text>
+  <rect class="tag-read" x="370" y="424" width="50" height="22" rx="11" />
+  <text class="tag-text" x="381" y="439">Read</text>
+  <rect class="tag-write" x="430" y="424" width="56" height="22" rx="11" />
+  <text class="tag-text" x="440" y="439">Write</text>
+  <text class="text" x="370" y="468">Click folder to open container</text>
+
+  <rect class="node" x="670" y="354" width="280" height="132" rx="10" />
+  <text class="label" x="700" y="384">Container Search / Filter</text>
+  <text class="text" x="700" y="410">Search container name</text>
+  <text class="text" x="700" y="432">Filter chips: All, Read, Write</text>
+  <text class="text" x="700" y="454">Sort: recent, name, write first</text>
+
+  <rect class="node-warn" x="1040" y="354" width="280" height="132" rx="10" />
+  <text class="label" x="1070" y="384">100+ Containers</text>
+  <text class="text" x="1070" y="410">No traditional pagination first</text>
+  <text class="text" x="1070" y="432">Switch to compact list / virtual grid</text>
+  <text class="text" x="1070" y="454">API keeps cursor support ready</text>
+
+  <path class="arrow" d="M222 296 C270 296 288 410 342 420" />
+  <path class="arrow" d="M602 420 C630 420 640 420 670 420" />
+  <path class="arrow" d="M950 420 C990 420 1000 420 1040 420" />
+
+  <line class="divider" x1="342" y1="528" x2="1352" y2="528" />
+  <text class="section" x="342" y="566">Container Detail View</text>
+
+  <rect class="node-accent" x="342" y="590" width="276" height="144" rx="10" />
+  <text class="label" x="370" y="620">Open Container</text>
+  <text class="text" x="370" y="646">Route: #/containers/team1</text>
+  <text class="text" x="370" y="668">Breadcrumb: Containers / Team 1</text>
+  <text class="text" x="370" y="690">GET /api/dashboards?container=team1</text>
+  <text class="text" x="370" y="712">List dashboard rows</text>
+
+  <rect class="node" x="690" y="590" width="276" height="144" rx="10" />
+  <text class="label" x="718" y="620">Dashboard Row</text>
+  <text class="text" x="718" y="646">Business Report.html</text>
+  <text class="text" x="718" y="668">path / reports / business</text>
+  <rect class="tag-fav" x="718" y="684" width="74" height="22" rx="11" />
+  <text class="tag-text" x="731" y="699">Favorite</text>
+  <text class="text" x="718" y="724">Open: /team1/business-report.html</text>
+
+  <rect class="node-ok" x="1040" y="590" width="280" height="144" rx="10" />
+  <text class="label" x="1070" y="620">Favorite Toggle</text>
+  <text class="text" x="1070" y="646">Immediate UI update</text>
+  <text class="text" x="1070" y="668">Phase 1: localStorage</text>
+  <text class="text" x="1070" y="690">Phase 2: PostgreSQL API</text>
+  <text class="text" x="1070" y="712">Used by Favorites view</text>
+
+  <path class="arrow-blue" d="M472 486 C472 528 480 558 480 590" />
+  <path class="arrow" d="M618 662 C648 662 660 662 690 662" />
+  <path class="arrow" d="M966 662 C1000 662 1008 662 1040 662" />
+
+  <line class="divider" x1="342" y1="768" x2="1352" y2="768" />
+  <text class="section" x="342" y="806">Search And Favorites Navigation</text>
+
+  <rect class="node" x="342" y="830" width="276" height="86" rx="10" />
+  <text class="label" x="370" y="860">Global Search</text>
+  <text class="text" x="370" y="886">Type BUS</text>
+  <text class="text" x="370" y="906">Filter all accessible dashboards</text>
+
+  <rect class="node" x="690" y="830" width="276" height="86" rx="10" />
+  <text class="label" x="718" y="860">Autocomplete</text>
+  <text class="text" x="718" y="886">Business Report.html</text>
+  <text class="text" x="718" y="906">Business Outcome Report.html</text>
+
+  <rect class="node-accent" x="1040" y="830" width="280" height="86" rx="10" />
+  <text class="label" x="1070" y="860">Favorites Route</text>
+  <text class="text" x="1070" y="886">#/favorites</text>
+  <text class="text" x="1070" y="906">Show only pinned dashboards</text>
+
+  <path class="arrow" d="M618 872 C650 872 658 872 690 872" />
+  <path class="arrow" d="M222 370 C270 370 292 872 342 872" />
+  <path class="arrow dash" d="M222 370 C280 370 1000 850 1040 872" />
+  <path class="arrow" d="M1180 734 C1180 770 1180 798 1180 830" />
+</svg>
