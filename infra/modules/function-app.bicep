@@ -10,6 +10,17 @@ param tenantId string
 param team1ReaderGroupId string
 param team2ReaderGroupId string
 param team3ReaderGroupId string
+param team1ContributorGroupId string
+param team2ContributorGroupId string
+param team3ContributorGroupId string
+
+param postgresHost string = ''
+param postgresDatabaseName string = ''
+param postgresAdminLogin string = ''
+@secure()
+param postgresAdminPassword string = ''
+
+extension 'br:mcr.microsoft.com/bicep/extensions/microsoftgraph/v1.0:0.2.0-preview'
 
 // Reference existing storage account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
@@ -26,6 +37,7 @@ resource appRegistration 'Microsoft.Graph/applications@v1.0' = {
   displayName: '${functionAppName}-auth'
   uniqueName: '${functionAppName}-auth'
   signInAudience: 'AzureADMyOrg'
+  groupMembershipClaims: 'SecurityGroup'
   web: {
     redirectUris: [
       'https://${functionAppName}.azurewebsites.net/.auth/login/aad/callback'
@@ -140,6 +152,39 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'READER_GROUP_TEAM3'
           value: team3ReaderGroupId
         }
+        // Writer mapping: container name -> contributor group ID
+        {
+          name: 'WRITER_GROUP_TEAM1'
+          value: team1ContributorGroupId
+        }
+        {
+          name: 'WRITER_GROUP_TEAM2'
+          value: team2ContributorGroupId
+        }
+        {
+          name: 'WRITER_GROUP_TEAM3'
+          value: team3ContributorGroupId
+        }
+        {
+          name: 'POSTGRES_HOST'
+          value: postgresHost
+        }
+        {
+          name: 'POSTGRES_DATABASE'
+          value: postgresDatabaseName
+        }
+        {
+          name: 'POSTGRES_USER'
+          value: postgresAdminLogin
+        }
+        {
+          name: 'POSTGRES_PASSWORD'
+          value: postgresAdminPassword
+        }
+        {
+          name: 'POSTGRES_SSLMODE'
+          value: 'require'
+        }
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
           value: 'true'
@@ -182,8 +227,8 @@ resource authSettings 'Microsoft.Web/sites/config@2023-12-01' = {
         }
         login: {
           loginParameters: [
-            'scope=openid profile email https://graph.microsoft.com/GroupMember.Read.All'
-            'response_type=code id_token'
+            'scope=openid profile email'
+            'response_type=id_token'
           ]
         }
       }

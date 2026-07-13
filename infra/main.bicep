@@ -18,6 +18,11 @@ param functionAppName string = ''
 param appServicePlanName string = ''
 param logAnalyticsName string = ''
 param applicationInsightsName string = ''
+param postgresServerName string = ''
+param postgresDatabaseName string = 'dashboard_library'
+param postgresAdminLogin string = 'dashboardadmin'
+@secure()
+param postgresAdminPassword string
 
 // Tags
 var tags = {
@@ -72,6 +77,21 @@ module storage './modules/storage.bicep' = {
   }
 }
 
+// PostgreSQL Flexible Server for persistent dashboard favorites.
+// Uses the smallest commonly available burstable tier to minimize cost.
+module postgres './modules/postgres.bicep' = {
+  name: 'postgres'
+  scope: rg
+  params: {
+    location: location
+    postgresServerName: !empty(postgresServerName) ? postgresServerName : 'psql-${resourceToken}'
+    postgresDatabaseName: postgresDatabaseName
+    postgresAdminLogin: postgresAdminLogin
+    postgresAdminPassword: postgresAdminPassword
+    tags: tags
+  }
+}
+
 // Function App with EasyAuth
 module functionApp './modules/function-app.bicep' = {
   name: 'function-app'
@@ -87,6 +107,13 @@ module functionApp './modules/function-app.bicep' = {
     team1ReaderGroupId: adGroups.outputs.team1ReaderGroupId
     team2ReaderGroupId: adGroups.outputs.team2ReaderGroupId
     team3ReaderGroupId: adGroups.outputs.team3ReaderGroupId
+    team1ContributorGroupId: adGroups.outputs.team1ContributorGroupId
+    team2ContributorGroupId: adGroups.outputs.team2ContributorGroupId
+    team3ContributorGroupId: adGroups.outputs.team3ContributorGroupId
+    postgresHost: postgres.outputs.postgresHost
+    postgresDatabaseName: postgres.outputs.postgresDatabaseName
+    postgresAdminLogin: postgres.outputs.postgresAdminLogin
+    postgresAdminPassword: postgresAdminPassword
   }
 }
 
@@ -123,3 +150,5 @@ output TEAM2_READER_GROUP_NAME string = adGroups.outputs.team2ReaderGroupName
 output TEAM3_READER_GROUP_ID string = adGroups.outputs.team3ReaderGroupId
 output TEAM3_READER_GROUP_NAME string = adGroups.outputs.team3ReaderGroupName
 output API_URI string = functionApp.outputs.functionAppUrl
+output POSTGRES_HOST string = postgres.outputs.postgresHost
+output POSTGRES_DATABASE string = postgres.outputs.postgresDatabaseName
